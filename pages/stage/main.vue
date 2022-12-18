@@ -66,8 +66,7 @@ export default {
       this.$fire.database.ref('stage').on('value', (snapshot) => {
         const val = snapshot.val()
         this.onOffloadRegistrants(val.offline_version)
-        if (val.main && val.main.bg) this.backgroundImage = val.main.bg
-        console.log('spin device', this.isSpinDevice)
+        this.backgroundImage = ((val.settings || {}).main || {}).bg_url
         if (!this.isSpinDevice) {
           this.state = val.state
           const winner = val.winner
@@ -176,6 +175,8 @@ export default {
     align-items: center;
     padding: 32px 16px;
     background-color: #fdfdfd;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   &-device {
@@ -193,7 +194,7 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #ffffff;
+    // background-color: #ffffff;
   }
 
   &-winner {

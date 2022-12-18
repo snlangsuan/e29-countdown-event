@@ -44,8 +44,9 @@
         </v-btn>
       </v-col>
       <v-col cols="12" md="4">
-        <v-btn block @click="handleOnSyncRegistrants">Sync Registrants</v-btn>
-        <v-btn color="error" class="my-3" block @click="handleOnCleanState">
+        <v-btn block @click="handleOnChangeBackground">Background Settings</v-btn>
+        <v-btn block class="my-3" @click="handleOnSyncRegistrants">Sync Registrants</v-btn>
+        <v-btn color="error" block @click="handleOnCleanState">
           Clean State
         </v-btn>
       </v-col>
@@ -58,6 +59,8 @@
     >
       {{ snackbar.message }}
     </v-snackbar>
+
+    <setting-background-dialog v-model="uploadBackgroundDialog" />
   </v-container>
 </template>
 
@@ -70,6 +73,7 @@ export default {
       state: 'wait',
       connected: false,
       enableLoading: false,
+      uploadBackgroundDialog: false,
       winner: {
         telno: '',
         name: '',
@@ -176,6 +180,9 @@ export default {
         { name: 'มานะ มานี', telno: '0812345654' },
       ]
     },
+    handleOnChangeBackground() {
+      this.uploadBackgroundDialog = true
+    }
   },
 }
 </script>

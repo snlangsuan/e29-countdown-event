@@ -1,5 +1,5 @@
 <template>
-  <div class="screen__container">
+  <div class="screen__container" :style="{ backgroundImage: 'url(' + backgroundImage + ')' }">
     <div class="screen-status">
       <v-chip :color="connectionStatusColor" small outlined>
         {{ connected ? 'online' : 'offline' }}
@@ -33,6 +33,7 @@ export default {
     return {
       state: null,
       connected: false,
+      backgroundImage: null,
       winner: {
         name: '',
         telno: ''
@@ -56,6 +57,7 @@ export default {
         const winner = val.winner
         this.winner.telno = winner.telno
         this.winner.name = winner.name
+        this.backgroundImage = ((val.settings || {}).second || {}).bg_url
       })
 
       this.$fire.database.ref('.info/connected').on('value', (snapshot) => {
@@ -73,6 +75,8 @@ export default {
     height: 100%;
     margin: auto;
     padding: 16px;
+    background-repeat: no-repeat;
+    background-size: cover;
     // max-width: 800px;
   }
 

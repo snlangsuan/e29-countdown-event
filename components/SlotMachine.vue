@@ -208,6 +208,7 @@ export default {
     align-items: center;
     font-size: 8rem;
     font-size: Roboto, 'sans-serif';
+    background-color: #fff;
   }
 }
 </style>
