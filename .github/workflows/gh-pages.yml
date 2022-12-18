@@ -3,6 +3,7 @@ on: [push, pull_request]
 jobs:
   cd:
     runs-on: ${{ matrix.os }}
+    environment: prod
     strategy:
       matrix:
         os: [ubuntu-latest]
