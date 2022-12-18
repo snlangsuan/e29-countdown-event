@@ -72,8 +72,8 @@ export default {
           this.password
         )
         setTimeout(() => {
-          this.$router.replace('/admin')
-        }, 300)
+          this.$router.replace('/admin/control')
+        }, 600)
       } catch (error) {
         this.error.messages =
           ['Sorry, your password was incorrect. Please double-check your password.']

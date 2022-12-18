@@ -10,5 +10,10 @@ export default {
       uid: authUser.uid,
       email: authUser.email
     }
+  },
+
+  ON_AUTH_STATE_CHANGED_MUTATION: (state, { authUser, claims }) => {
+    const { uid, email } = authUser
+    state.authUser = { uid, email }
   }
 }
