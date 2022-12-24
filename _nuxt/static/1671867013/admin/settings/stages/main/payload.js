@@ -1,0 +1,1 @@
+__NUXT_JSONP__("/admin/settings/stages/main", {data:[{}],fetch:{},mutations:[]});
