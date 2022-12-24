@@ -1,6 +1,15 @@
 <template>
   <div :id="id" class="upload-field">
+    <div v-if="src" class="upload-field__content">
+      <div class="upload-field__image">
+        <div class="upload-field__image--remove">
+          <v-icon color="white" @click="handelOnRemoveURL">mdi-delete</v-icon>
+        </div>
+        <v-img :src="src" class="grey lighten-4" width="100%" height="100%" contain />
+      </div>
+    </div>
     <div
+      v-else
       id="upload_content"
       :class="['upload-field__content', { 'upload-field--error': !valid, 'upload-field--disabled': disabled }, { 'upload-field-drop': isDragging }]"
       @drop="handelOnDrop"
@@ -44,6 +53,10 @@ export default {
   },
   props: {
     value: {
+      type: String,
+      default: '',
+    },
+    src: {
       type: String,
       default: '',
     },
@@ -177,6 +190,11 @@ export default {
       this.$emit('input', this.localVal)
       this.$emit('change', this.localVal, this.original)
       this.validate(true, this.localVal)
+    },
+    handelOnRemoveURL() {
+      console.log('remove url')
+      this.$emit('update:src', null)
+      this.$emit('remove')
     }
   }
 }

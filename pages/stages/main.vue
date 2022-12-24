@@ -1,5 +1,29 @@
 <template>
-  <div
+  <div class="screen__container">
+    <div class="screen__wrapper" :style="screenStyle">
+      <div class="screen__slot" :style="slotStyle">
+        <slot-machine
+          ref="slot_machine"
+          :items="slotLen"
+          :message="'คุณ' + winner.name"
+          :visible="showWinner"
+          :message-color="settings.slot.name_color"
+          :color="settings.slot.number_color"
+          :slot-background="settings.slot.number_background"
+          :background-color="settings.slot.background_color"
+        />
+      </div>
+      <div class="screen__button" :style="screenButtonStyle">
+        <button
+          class="screen-btn"
+          :style="buttonStyle"
+          :disabled="!hasRegistrants || ['wait', 'spined', 'spinning'].includes(state)"
+          @click="handleOnSpin"
+        ></button>
+      </div>
+    </div>
+  </div>
+  <!-- <div
     v-resize="onResize"
     class="screen__container"
     :style="{ backgroundImage: 'url(' + backgroundImage + ')' }"
@@ -15,10 +39,11 @@
         @click="handleOnSpin"
       ></button>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script>
+import dayjs from 'dayjs'
 export default {
   name: 'StageMainPage',
   layout: 'empty',
@@ -41,6 +66,68 @@ export default {
         show: false,
         messages: [],
       },
+      settings: {
+        width: 1280,
+        height: 720,
+        background: {
+          url: null,
+          image: null,
+          path: null,
+          mode: 'color',
+          color: '#DDDDDD',
+        },
+        button: {
+          size: 180,
+          padding_top: 32,
+          padding_bottom: 32,
+          background: {
+            url: null,
+            image: null,
+            path: null,
+          },
+        },
+        slot: {
+          width: 1240,
+          name_color: '#000000',
+          number_color: '#000000',
+          number_background: '#ffffff',
+          background_color: '#ffffff00'
+        },
+      },
+    }
+  },
+  computed: {
+    screenStyle() {
+      const background =
+        this.settings.background.mode === 'color'
+          ? { backgroundColor: this.settings.background.color }
+          : {
+              backgroundImage: 'url(' + this.settings.background.url + ')',
+            }
+      return {
+        width: this.settings.width + 'px',
+        height: this.settings.height + 'px',
+        ...background,
+      }
+    },
+    slotStyle() {
+      return {
+        width: this.settings.slot.width + 'px',
+      }
+    },
+    screenButtonStyle() {
+      return {
+        paddingTop: this.settings.button.padding_top + 'px',
+        paddingBottom: this.settings.button.padding_bottom + 'px',
+      }
+    },
+    buttonStyle() {
+      return {
+        width: this.settings.button.size + 'px',
+        height: this.settings.button.size + 'px',
+        backgroundImage: 'url(' + this.settings.button.background.url + ')',
+        backgroundColor: this.settings.button.background.url ? 'transparent' : '#ffffff',
+      }
     }
   },
   mounted() {
@@ -86,6 +173,37 @@ export default {
           this.showWinner = false
         }
       })
+
+      this.$fire.database.ref('settings/stages/main').on('value', this.loadSettings)
+    },
+    loadSettings(snapshot) {
+      try {
+        const settings = snapshot.val() || {}
+        this.settings.width = settings.width || 1280
+        this.settings.height = settings.height || 720
+        const background = settings.background || {}
+        this.settings.background.mode = background.mode || 'color'
+        this.settings.background.color = background.color || '#DDDDDD'
+        this.settings.background.url = background.url || null
+        this.settings.background.path = background.path || null
+        this.settings.background.image = null
+        const button = settings.button || {}
+        this.settings.button.size = button.size || 180
+        this.settings.button.padding_top = button.padding_top || 32
+        this.settings.button.padding_bottom = button.padding_bottom || 32
+        const btnImage = button.background || {}
+        this.settings.button.background.url = btnImage.url || null
+        this.settings.button.background.path = btnImage.path || null
+        this.settings.button.background.image = null
+        const slot = settings.slot || {}
+        this.settings.slot.width = slot.width || 1240
+        this.settings.slot.name_color = slot.name_color || '#000000'
+        this.settings.slot.number_color = slot.number_color || '#000000'
+        this.settings.slot.number_background = slot.number_background || '#ffffff'
+        this.settings.slot.background_color = slot.background_color || '#ffffff00'
+      } catch (error) {
+        console.error(error)
+      }
     },
     async handleOnSpin() {
       try {
@@ -104,6 +222,7 @@ export default {
         await this.$fire.database.ref('stage').update({
           state: 'spined'
         })
+        await this.$fire.database.ref('winner_logs').push({ ...winner, created_at: dayjs().format('YYYY-MM-DD HH:mm:ss') })
         this.state = 'spined'
       } catch (error) {
         console.error(error)
@@ -169,14 +288,35 @@ export default {
 .screen {
   &__container {
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 32px 16px;
-    background-color: #fdfdfd;
+    margin: auto;
     background-repeat: no-repeat;
     background-size: cover;
+  }
+
+  &__wrapper {
+    position: relative;
+    background-color: #ddd;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    border: thin solid #fafafa;
+    cursor: none;
+    overflow: hidden;
+
+    user-select: none;
+
+    & * {
+      user-select: none;
+    }
+  }
+
+  &__button {
+
   }
 
   &-device {

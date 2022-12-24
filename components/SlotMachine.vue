@@ -1,17 +1,17 @@
 <template>
-  <div :ref="id" class="slot-machine__container">
+  <div :ref="id" class="slot-machine__container" :style="{ backgroundColor: backgroundColor }">
     <div class="slot-machine-list">
       <template v-for="i in items">
         <div
           :key="'item-' + i"
           class="slot-machine-item"
-          :style="{ width: boxSize + 'px', height: boxSize + 'px' }"
+          :style="{ width: boxSize + 'px', height: (boxSize + 24) + 'px', backgroundColor: slotBackground, color: color }"
         >
           <div class="slot-machine-boxes"></div>
         </div>
       </template>
     </div>
-    <div v-if="!hideDetails" class="slot-machine__details" :style="{ fontSize: (boxSize * 0.7) + 'px' }">
+    <div v-if="!hideDetails" class="slot-machine__details" :style="{ fontSize: (boxSize * 0.7) + 'px', color: messageColor }">
       {{ visible ? message : '&nbsp;' }}
     </div>
   </div>
@@ -36,6 +36,22 @@ export default {
     visible: {
       type: Boolean,
       default: true,
+    },
+    messageColor: {
+      type: String,
+      default: '#000000'
+    },
+    color: {
+      type: String,
+      default: '#000000'
+    },
+    slotBackground: {
+      type: String,
+      default: '#ffffff'
+    },
+    backgroundColor: {
+      type: String,
+      default: '#ffffff00'
     }
   },
   data() {
@@ -208,7 +224,7 @@ export default {
     align-items: center;
     font-size: 8rem;
     font-size: Roboto, 'sans-serif';
-    background-color: #fff;
+    margin-left: -3px;
   }
 }
 </style>
@@ -218,6 +234,8 @@ export default {
   &__container {
     width: 100%;
     padding: 16px;
+    padding-bottom: 8px;
+    border-radius: 4px;
   }
 
   &-list {
@@ -232,9 +250,12 @@ export default {
   }
 
   &-item {
-    border: thin solid #eee;
+    // border: thin solid #eee;
     border-radius: 4px;
     overflow: hidden;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background-color: #fff;
   }
 
   &-list > &-item + &-item {
