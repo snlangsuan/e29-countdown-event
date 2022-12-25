@@ -1,1 +1,0 @@
-window.__NUXT__=(function(a){return {staticAssetsBase:"\u002Fe29-countdown-event\u002F_nuxt\u002Fstatic\u002F1671867013",layout:"admin",error:a,state:{authUser:a},serverRendered:true,routePath:"\u002Fadmin\u002Fsettings\u002Fstages\u002Fsecond",config:{_app:{basePath:"\u002Fe29-countdown-event\u002F",assetsPath:"\u002Fe29-countdown-event\u002F_nuxt\u002F",cdnURL:a}}}}(null));
