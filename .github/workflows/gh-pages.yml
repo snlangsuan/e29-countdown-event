@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   cd:
     runs-on: ${{ matrix.os }}
-    environment: prod
+    environment: github-pages
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -30,6 +30,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MSG_SENDER_ID: ${{ secrets.FIREBASE_MSG_SENDER_ID }}
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          PINVEST_AUTH_TOKEN: ${{ secrets.PINVEST_AUTH_TOKEN }}
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
