@@ -262,7 +262,7 @@ export default {
         const localVersion = localStorage.getItem('offline_version')
         console.log('load registrants', version, localVersion)
         if (localVersion !== version + '') {
-          const snapshot = await this.$fire.database.ref('registrants').once('value')
+          const snapshot = await this.$fire.database.ref('candidates').once('value')
           const registrants = snapshot.val()
           localStorage.setItem('offline_registrants', JSON.stringify(registrants))
           localStorage.setItem('offline_version', version)

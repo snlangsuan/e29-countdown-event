@@ -17,6 +17,9 @@
               </v-btn>
             </template>
             <v-list dense>
+              <v-list-item @click="handleOnExportExcel">
+                <v-list-item-title>Export Excel</v-list-item-title>
+              </v-list-item>
               <v-list-item @click="handleOnCleanHistory">
                 <v-list-item-title>Clean History</v-list-item-title>
               </v-list-item>
@@ -90,12 +93,23 @@
               </div>
             </div>
           </div>
-          <div style="height: 64px">
-            <div class="admin-control-status">
-              <v-chip v-if="connected" :color="stateColor" small outlined>
-                {{ state }}
-              </v-chip>
-              <v-chip v-else color="error" small outlined>offline</v-chip>
+          <div class="admin-control-description">
+            <div class="d-flex align-start justify-center">
+              <div class="pa-3">
+                <v-card color="grey lighten-3" elevation="0">
+                  <v-card-text class="pa-2">
+                    <div style="font-size: 1.2rem;font-weight: 500">{{ candidateCount }}</div>
+                    <div style="font-size: 0.8rem">Candidates</div>
+                  </v-card-text>
+                </v-card>
+              </div>
+              <v-spacer />
+              <div class="admin-control-status">
+                <v-chip v-if="connected" :color="stateColor" small outlined>
+                  {{ state }}
+                </v-chip>
+                <v-chip v-else color="error" small outlined>offline</v-chip>
+              </div>
             </div>
           </div>
         </div>
@@ -120,7 +134,7 @@
             <v-row>
               <v-col cols="12" md="6" class="pa-2">
                 <button
-                  class="admin-control-quick-actions__item"
+                  class="admin-control-quick-actions__item admin-control-quick-actions__item--purple"
                   :disabled="!enabled"
                   @click="handleOnEnableRandom"
                 >
@@ -141,21 +155,21 @@
               <v-col cols="12" md="6" class="pa-2">
                 <button
                   class="admin-control-quick-actions__item admin-control-quick-actions__item--blue"
-                  @click="handleOnSyncRegistrants"
+                  @click="loadCandidatesDialog = true"
                 >
                   <div><v-icon size="46">mdi-sync</v-icon></div>
-                  <div>Sync Registrants</div>
+                  <div>Load Candidates</div>
                 </button>
               </v-col>
               <v-col cols="12" md="6" class="pa-2">
                 <button
                   class="admin-control-quick-actions__item admin-control-quick-actions__item--blue"
-                  disabled
+                  @click="importCandidatesDialog = true"
                 >
                   <div>
                     <v-icon size="46">mdi-database-import-outline</v-icon>
                   </div>
-                  <div>Import Registrants (CSV)</div>
+                  <div>Import Candidates (CSV)</div>
                 </button>
               </v-col>
               <v-col cols="12" md="6" class="pa-2">
@@ -172,6 +186,8 @@
         </div>
       </v-col>
     </v-row>
+    <load-candidate-dialog v-model="loadCandidatesDialog" />
+    <import-candidate-dialog v-model="importCandidatesDialog" />
     <v-snackbar
       v-model="snackbar.show"
       :timeout="snackbar.timeout"
@@ -184,9 +200,12 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
+import XLSX from 'xlsx-js-style'
 export default {
   name: 'AdminControlPage',
   layout: 'admin',
+  middleware: 'auth',
   data() {
     return {
       title: '',
@@ -204,6 +223,9 @@ export default {
         timeout: 3000,
         color: 'success',
       },
+      loadCandidatesDialog: false,
+      importCandidatesDialog: false,
+      candidateCount: 0,
     }
   },
   computed: {
@@ -243,6 +265,8 @@ export default {
         const winner = val.winner
         this.winner.telno = winner.telno
         this.winner.name = winner.name
+        this.candidateCount = val.candidates_count
+        console.log(val)
       })
 
       this.$fire.database.ref('.info/connected').on('value', (snapshot) => {
@@ -298,7 +322,7 @@ export default {
     async handleOnSyncRegistrants() {
       try {
         const registrants = await this.getRegistrants()
-        await this.$fire.database.ref('registrants').set(registrants)
+        await this.$fire.database.ref('candidates').set(registrants)
         await this.$fire.database
           .ref('stage')
           .child('offline_version')
@@ -312,13 +336,129 @@ export default {
         this.snackbar.show = true
       }
     },
-    async getRegistrants() {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      return [
-        { name: 'ทดสอบ ดวงดี', telno: '0823456743' },
-        { name: 'มานะ มานี', telno: '0812345654' },
-      ]
-    },
+    async handleOnExportExcel() {
+      try {
+        console.log('export excel')
+        const snapshot = await this.$fire.database.ref('winner_logs').once('value')
+        const winners = snapshot.val()
+        const timestamp = Date.now()
+        const wb = XLSX.utils.book_new()
+        const columnStyle = {
+          alignment: { vertical: 'center', horizontal: 'left' },
+          font: { sz: 12, bold: true },
+          border: {
+            top: { style: 'thin', color: { rgb: '000000' }},
+            bottom: { style: 'thin', color: { rgb: '000000' }},
+            left: { style: 'thin', color: { rgb: '000000' }},
+            right: { style: 'thin', color: { rgb: '000000' }},
+          }
+        }
+        const contentStyle = {
+          alignment: { vertical: 'center', horizontal: 'left' },
+          font: { sz: 12 },
+          border: {
+            top: { style: 'thin', color: { rgb: '000000' }},
+            bottom: { style: 'thin', color: { rgb: '000000' }},
+            left: { style: 'thin', color: { rgb: '000000' }},
+            right: { style: 'thin', color: { rgb: '000000' }},
+          }
+        }
+        const content = [
+          [{
+            v: 'Winner History',
+            t: 's',
+            s: {
+              alignment: { vertical: 'center', horizontal: 'center' },
+              font: { sz: 16, bold: true }
+            }
+          }],
+          [{
+            v: dayjs().format('YYYY-MM-DD'),
+            t: 's',
+            s: {
+              alignment: { vertical: 'center', horizontal: 'center' },
+              font: { sz: 12 }
+            }
+          }],
+          [{ v: '', t: 's' }],
+          [
+            {
+              v: 'No.',
+              t: 's',
+              s: columnStyle
+            },
+            {
+              v: 'Name',
+              t: 's',
+              s: columnStyle
+            },
+            {
+              v: 'Phone number',
+              t: 's',
+              s: columnStyle
+            },
+            {
+              v: 'Created at',
+              t: 's',
+              s: columnStyle
+            }
+          ]
+        ]
+        const merge = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+          { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+          { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }
+        ]
+        const rows = [
+          { hpt: 26 },
+          { hpt: 26 },
+          { hpt: 18 },
+          { hpt: 26 },
+        ]
+        let count = 1
+        for (const i in winners) {
+          const item = winners[i]
+          content.push([
+            {
+              v: count,
+              t: 's',
+              s: contentStyle
+            },
+            {
+              v: item.name,
+              t: 's',
+              s: contentStyle
+            },
+            {
+              v: item.telno,
+              t: 's',
+              s: contentStyle
+            },
+            {
+              v: dayjs(item.created_at).format('YYYY-MM-DD HH:mm'),
+              t: 's',
+              s: contentStyle
+            }
+          ])
+          rows.push({ hpt: 26 })
+          count += 1
+        }
+        const cols = [
+          { wpx: 80 },
+          { wpx: 200 },
+          { wpx: 120 },
+          { wpx: 120 }
+        ]
+        const ws = XLSX.utils.aoa_to_sheet(content)
+        ws['!merges'] = merge
+        ws['!rows'] = rows
+        ws['!cols'] = cols
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+        XLSX.writeFile(wb, `export-winner-history-${timestamp}.xlsx`);
+      } catch (error) {
+        console.error(error)
+      }
+    }
   },
 }
 </script>
@@ -339,6 +479,10 @@ export default {
       font-size: 1rem;
       font-weight: 400;
     }
+  }
+
+  &-description {
+    min-height: 84px;
   }
 
   &-panel {
@@ -364,11 +508,16 @@ export default {
       width: 100%;
       height: 7rem;
       border-radius: 4px;
-      background-color: #9147ff;
+      background-color: #ffffff;
       color: #ffffff;
       display: flex;
       flex-direction: column;
       padding: 12px 10px;
+
+      & > input[type=text],
+      & > input[type=file] {
+        display: none;
+      }
 
       & > *:first-child {
         flex: 1;
@@ -385,7 +534,7 @@ export default {
       }
 
       &:hover {
-        background-color: #772ce8;
+        background-color: #ffffff;
       }
 
       &--red {

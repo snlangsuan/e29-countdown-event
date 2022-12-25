@@ -1,12 +1,19 @@
 <template>
   <div :id="id" class="upload-field">
-    <div v-if="src" class="upload-field__content">
-      <div class="upload-field__image">
-        <div class="upload-field__image--remove">
-          <v-icon color="white" @click="handelOnRemoveURL">mdi-delete</v-icon>
+    <div v-if="files.length > 0" class="upload-field-list">
+      <template v-for="file, i in files">
+        <div :key="'file-' + i" class="upload-field-item">
+          <div>
+            <v-icon left>mdi-file-document-outline</v-icon>
+          </div>
+          <div style="flex: 1">{{ file.name }}</div>
+          <div>
+            <v-btn color="error" icon @click="handleOnRemove(i)">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
         </div>
-        <v-img :src="src" class="grey lighten-4" width="100%" height="100%" contain />
-      </div>
+      </template>
     </div>
     <div
       v-else
@@ -17,14 +24,8 @@
       @dragenter="handelOnDragEnter"
       @dragleave="handleOnDragLeave"
     >
-      <input ref="picture_upload" type="file" alt="" title="" :accept="accept" @input="handelOnChangeFile" />
-      <div v-if="localVal" class="upload-field__image">
-        <div class="upload-field__image--remove">
-          <v-icon color="white" @click="handelOnRemove">mdi-delete</v-icon>
-        </div>
-        <v-img :src="localVal" class="grey lighten-4" width="100%" height="100%" contain />
-      </div>
-      <div v-else-if="isDragging" class="upload-field__drop-zone">
+      <input ref="file_upload" type="file" alt="" title="" :accept="accept" :multiple="multiple" @input="handelOnChangeFile" />
+      <div v-if="isDragging" class="upload-field__drop-zone">
         <v-avatar color="#1967d2">
           <v-icon dark>mdi-tray-arrow-up</v-icon>
         </v-avatar>
@@ -32,7 +33,7 @@
       </div>
       <div v-else class="upload-field__normal">
         <v-icon size="32">mdi-image</v-icon>
-        <div class="text-subtitle-1 font-weight-light">Drag and drop or <div @click="$refs.picture_upload.click()">browse</div></div>
+        <div class="text-subtitle-1 font-weight-light">Drag and drop or <div @click="$refs.file_upload.click()">browse</div></div>
       </div>
     </div>
     <div :class="['upload-field__details', { 'upload-field__details--hide': hideDetails }]">
@@ -43,52 +44,41 @@
 </template>
 
 <script>
-import Compressor from 'compressorjs'
 import VInput from 'vuetify/lib/components/VInput/VInput.js'
 export default {
-  name: 'UploadImageField',
+  name: 'UploadFileField',
   extends: VInput,
   inject: {
     form: { default: null }
   },
   props: {
     value: {
-      type: String,
-      default: '',
-    },
-    src: {
-      type: String,
-      default: '',
+      type: Array,
+      default() {
+        return []
+      }
     },
     accept: {
       type: String,
       default: 'image/png,image/jpg'
     },
-    imageMaxDimension: {
-      type: Array,
-      default() {
-        return [640, 640]
-      }
+    multiple: {
+      type: Boolean,
+      default: false,
     },
+    maxHeight: {
+      type: Number,
+      default: -1
+    }
   },
   data() {
     return {
-      id: null,
-      localVal: '',
-      original: null,
-      fileCompressor: null,
       isDragging: false,
-      processing: false
+      files: [],
     }
-  },
-  watch: {
-    value(val) {
-      this.localVal = val
-    },
   },
   mounted() {
     this.valid = true
-    this.localVal = this.value
   },
   methods: {
     validate(force, value) {
@@ -112,28 +102,24 @@ export default {
     },
     reset() {
       this.valid = true
-      this.localVal = ''
-      this.original = null
+      this.files = []
       this.errorBucket = []
-      this.$emit('input', this.localVal)
+      this.$emit('input', this.files)
     },
     resetValidation() {
       this.valid = true
       this.errorBucket = []
     },
-    getFile() {
-      return this.original
-    },
     handelOnChangeFile() {
-      this.onConvertImage()
+      this.onProcessFile()
     },
     handelOnDrop(e) {
       e.preventDefault()
       if (this.disabled || !!this.localVal) return
       this.isDragging = false
       const files = e.dataTransfer.files
-      this.$refs.picture_upload.files = files
-      this.onConvertImage()
+      this.$refs.file_upload.files = files
+      this.onProcessFile()
     },
     handelOnDragEnter(e) {
       e.preventDefault()
@@ -148,54 +134,28 @@ export default {
       if (this.disabled || !!this.localVal) return
       e.preventDefault()
     },
-    onConvertImage() {
-      const input = this.$refs.picture_upload.files
-      if (!!input && input.length > 0) {
-        const file = input[0]
-        const types = this.accept.split(',')
-        console.log(types, file.type)
+    onProcessFile(e) {
+      const files = this.$refs.file_upload.files
+      this.files = []
+      const types = this.accept.split(',')
+      let count = 0
+      for (const file of files) {
+        if (!this.multiple && count > 0) break
         if (!types.includes(file.type)) {
-          this.errorBucket.push('File not support')
+          this.errorBucket = ['File not support']
           this.valid = false
-          return
         }
-        this.processing = true
-        const onSuccess = (result) => {
-          const reader = new FileReader()
-          reader.onload = this.onRead
-          reader.readAsDataURL(result)
-          this.original = result
-        }
-        this.fileCompressor = new Compressor(file, {
-          convertSize: 5000000,
-          maxWidth: this.imageMaxDimension[0],
-          maxHeight: this.imageMaxDimension[1],
-          success: onSuccess
-        })
+        this.files.push(file)
+        count += 1
       }
+      console.log(this.files)
+      this.$emit('input', this.files)
+      this.$emit('uploaded')
     },
-    onRead(e) {
-      console.log('read')
-      this.localVal = e.target.result
-      this.$emit('input', this.localVal)
-      this.$emit('change', this.localVal, this.original)
-      this.$refs.picture_upload.value = null
-      this.$refs.picture_upload.type = 'text'
-      this.$refs.picture_upload.type = 'file'
-      this.validate(true, this.localVal)
-      this.processing = false
-    },
-    handelOnRemove() {
-      this.localVal = ''
-      this.original = null
-      this.$emit('input', this.localVal)
-      this.$emit('change', this.localVal, this.original)
-      this.validate(true, this.localVal)
-    },
-    handelOnRemoveURL() {
-      console.log('remove url')
-      this.$emit('update:src', null)
-      this.$emit('remove')
+    handleOnRemove(index) {
+      console.log(index)
+      this.files.splice(index, 1)
+      this.$emit('input', this.files)
     }
   }
 }
@@ -204,6 +164,21 @@ export default {
 <style lang="scss" scoped>
 .upload-field {
   position: relative;
+
+  &-list {
+    height: 240px;
+    overflow: hidden;
+    overflow-y: auto;
+    border: thin solid #efefef;
+    border-radius: 4px;
+  }
+
+  &-item {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 
   &__content {
     border: thin dashed #1967d2 !important;
@@ -267,27 +242,6 @@ export default {
     display: flex;
     & > * {
       pointer-events: auto;
-    }
-  }
-
-  &__image {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    &--remove {
-      display: none;
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 1;
-      background-color: rgba(0, 0, 0, 0.25);
-      align-items: center;
-      justify-content: center;
     }
   }
 

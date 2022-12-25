@@ -161,7 +161,7 @@ export default {
     async handleOnSyncRegistrants() {
       try {
         const registrants = await this.getRegistrants()
-        await this.$fire.database.ref('registrants').set(registrants)
+        await this.$fire.database.ref('candidates').set(registrants)
         await this.$fire.database
           .ref('stage')
           .child('offline_version')

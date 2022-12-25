@@ -69,16 +69,22 @@ export default {
           icon: 'mdi-gamepad-variant-outline',
         },
         {
+          key: 'menu-registrants',
+          text: 'Candidates',
+          link: '/admin/candidates',
+          icon: 'mdi-table-account',
+        },
+        {
           key: 'menu-settings-stages-main',
           text: 'Settings Main',
           link: '/admin/settings/stages/main',
-          icon: 'mdi-cog-outline',
+          icon: 'mdi-numeric-1-box-outline',
         },
         {
           key: 'menu-settings-stages-second',
           text: 'Settings Second',
           link: '/admin/settings/stages/second',
-          icon: 'mdi-cog-outline',
+          icon: 'mdi-numeric-2-box-outline',
         },
         {
           key: 'menu-divider-1',

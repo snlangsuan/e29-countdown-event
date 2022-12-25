@@ -14,6 +14,10 @@ export default {
     base: '/e29-countdown-event/',
   },
 
+  publicRuntimeConfig: {
+    pinvestAuthToken: process.env.PINVEST_AUTH_TOKEN,
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     titleTemplate: '%s',
