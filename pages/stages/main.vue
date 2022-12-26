@@ -94,6 +94,7 @@ export default {
           background_color: '#ffffff00'
         },
       },
+      winners: [],
     }
   },
   computed: {
@@ -174,6 +175,11 @@ export default {
         }
       })
 
+      this.$fire.database.ref('winner_logs').on('value', (snapshot) => {
+        const val = snapshot.val() || {}
+        this.winners = Object.keys(val).map((x) => val[x].telno)
+      })
+
       this.$fire.database.ref('settings/stages/main').on('value', this.loadSettings)
     },
     loadSettings(snapshot) {
@@ -245,13 +251,14 @@ export default {
     },
     getWinner() {
       try {
-        const registrants = this.loadRegistrants()
+        let registrants = this.loadRegistrants()
+        registrants = registrants.filter((x) => !this.winners.includes(x.telno))
         console.log('before get winner', registrants.length)
         const item = registrants[Math.floor(Math.random()*registrants.length)]
         const filter = registrants.filter((x) => x.telno !== item.telno)
-        localStorage.setItem('offline_registrants', JSON.stringify(filter))
+        // localStorage.setItem('offline_registrants', JSON.stringify(filter))
         this.hasRegistrants = (filter && filter.length > 0)
-        console.log('after get winner', filter.length)
+        // console.log('after get winner', filter.length)
         return item
       } catch (error) {
         console.error(error)
@@ -291,6 +298,7 @@ export default {
     margin: auto;
     background-repeat: no-repeat;
     background-size: cover;
+    overflow: auto;
   }
 
   &__wrapper {

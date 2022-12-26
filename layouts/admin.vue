@@ -70,7 +70,7 @@ export default {
         },
         {
           key: 'menu-registrants',
-          text: 'Candidates',
+          text: 'Random Data',
           link: '/admin/candidates',
           icon: 'mdi-table-account',
         },

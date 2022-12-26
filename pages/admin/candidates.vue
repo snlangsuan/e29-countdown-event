@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <div class="text-h4">Candidates</div>
+        <div class="text-h4">Random Data</div>
       </v-col>
     </v-row>
     <v-row>
@@ -63,8 +63,9 @@ export default {
     async loadData() {
       try {
         this.loading = true
-        const snapshot = await this.$fire.database.ref('candidates').once('value')
-        const items = snapshot.val()
+        const snapshot = await this.$fire.database.ref('candidates1').once('value')
+        const items = snapshot.val() || []
+        console.log(items)
         this.items = items
       } catch (error) {
         console.error(error)

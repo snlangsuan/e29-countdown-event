@@ -52,7 +52,7 @@ export default {
   name: 'LoginPage',
   data() {
     return {
-      loading: false,
+      loading: true,
       valid: true,
       username: null,
       password: null,
@@ -61,6 +61,12 @@ export default {
         messages: [],
       },
     }
+  },
+  mounted() {
+    if (this.$store.state.authUser)
+      this.$router.replace('/admin/control')
+    else
+      this.loading = false
   },
   methods: {
     async handleOnSigIn() {

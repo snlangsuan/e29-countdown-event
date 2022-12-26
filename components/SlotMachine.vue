@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
 export default {
   name: 'SlotMachine',
   props: {
@@ -98,7 +99,7 @@ export default {
     },
     roll(selected, first = true, groups = 1, duration = 1) {
       const items = document.querySelectorAll('.slot-machine-item')
-      duration = Math.min(1, duration)
+      duration = Math.max(1, duration)
       let row = 0
       for (const item of items) {
         if (first) item.dataset.spinned = '0'
@@ -150,7 +151,7 @@ export default {
           boxesClone.appendChild(box)
         }
 
-        boxesClone.style.transitionDuration = `${duration}s`
+        boxesClone.style.transitionDuration = `${duration + (row * 0.5)}s`
         boxesClone.style.transform = `translateY(-${
           (item.clientHeight + 1.8) * (pool.length - 1)
         }px)`
@@ -173,22 +174,27 @@ export default {
       if (this.spinning) return
       try {
         this.spinning = true
-        this.audio && this.audio.play()
+        setTimeout(() => {
+          this.audio && this.audio.play()
+        }, 400)
         const randpad = ('0'.repeat(this.items) + code).slice(-this.items).split('')
-        this.roll(randpad, false, 1, 2)
-        const start = Date.now()
+        this.roll(randpad, false, 4, 4)
+        const start = dayjs()
         const items = document.querySelectorAll('.slot-machine-item')
+        console.log('items', items.length)
         for (const item of items) {
           const boxes = item.querySelector('.slot-machine-boxes')
           const duration = parseInt(boxes.style.transitionDuration)
+          console.log('duration', duration)
           boxes.style.transform = 'translateY(0)'
-          await new Promise((resolve) => setTimeout(resolve, duration * 100))
+          await new Promise((resolve) => setTimeout(resolve, duration * 20))
         }
-        await new Promise((resolve) => setTimeout(resolve, 900))
-        const end = Date.now()
+        const end = dayjs()
+        console.log('start', start.format('HH:mm:ss'), 'end', end.format('HH:mm:ss'), end.diff(start, 'seconds', true))
+        await new Promise((resolve) => setTimeout(resolve, 7800))
+
         this.audio && this.audio.pause()
         this.audio && (this.audio.currentTime = 0)
-        console.log('start', start, 'end', end, (end - start) / 1000)
       } catch (error) {
         console.error(error)
       } finally {
@@ -263,7 +269,7 @@ export default {
   }
 
   &__boxes {
-    transition: transform 1s ease-in-out;
+    transition: transform 5s ease-in-out;
   }
 
   &__details {

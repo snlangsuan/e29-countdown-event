@@ -22,6 +22,20 @@
           <div class="screen-winner--empty" :style="{ fontSize: (settings.content.name_size * 0.8) + 'px' }">รอประกาศผล</div>
         </div>
       </div>
+      <v-spacer />
+      <div class="screen-history">
+        <div class="screen-history-list elevation-1">
+          <template v-for="item in winners.slice(0, 3)">
+            <div :key="item.id" class="screen-history-item">
+              <div>
+                <div>{{ item.name }}</div>
+                <div class="text-caption grey--text">{{ item.telno }}</div>
+              </div>
+              <div class="text-caption grey--text">{{ item.created_at | time_ago }}</div>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
     <v-overlay v-model="loading">
       <div class="text-center">
@@ -33,6 +47,7 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
 export default {
   name: 'StageSecondPage',
   layout: 'empty',
@@ -60,7 +75,8 @@ export default {
             color: '#ffffffaa'
           }
         }
-      }
+      },
+      winners: [],
     }
   },
   computed: {
@@ -102,6 +118,8 @@ export default {
         this.winner.telno = winner.telno
         this.winner.name = winner.name
         this.backgroundImage = ((val.settings || {}).second || {}).bg_url
+        if (this.winners.length > 0 && winner.telno)
+          this.winners = this.winners.filter((x) => x.telno !== winner.telno)
       })
 
       this.$fire.database.ref('.info/connected').on('value', (snapshot) => {
@@ -109,6 +127,12 @@ export default {
       })
 
       this.$fire.database.ref('settings/stages/second').on('value', this.loadSettings)
+
+      this.$fire.database.ref('winner_logs').on('value', (snapshot) => {
+        const val = snapshot.val() || {}
+        this.winners = Object.keys(val).map((x) => ({ ...val[x], id: x })).sort((a, b) => dayjs(b.created_at) - dayjs(a.created_at))
+        if (this.winner.telno) this.winners = this.winners.filter((x) => x.telno !== this.winner.telno)
+      })
     },
     loadSettings(snapshot) {
       try {
@@ -212,6 +236,33 @@ export default {
       text-align: center;
       color: #ccc;
       font-size: 1rem;
+    }
+  }
+
+  &-history {
+    width: 100%;
+    padding: 16px;
+
+    &-list {
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    &-item {
+      display: flex;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-left: 16px;
+      padding-right: 16px;
+
+      & > *:first-child {
+        flex: 1;
+      }
+    }
+
+    &-list > &-item + &-item {
+      border-top: thin solid #eee;
     }
   }
 }

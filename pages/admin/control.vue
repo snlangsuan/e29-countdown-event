@@ -99,7 +99,7 @@
                 <v-card color="grey lighten-3" elevation="0">
                   <v-card-text class="pa-2">
                     <div style="font-size: 1.2rem;font-weight: 500">{{ candidateCount }}</div>
-                    <div style="font-size: 0.8rem">Candidates</div>
+                    <div style="font-size: 0.8rem">Random Data</div>
                   </v-card-text>
                 </v-card>
               </div>
