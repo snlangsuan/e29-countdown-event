@@ -170,7 +170,7 @@ export default {
         }
 
         if (this.winner.telno === '0000000000') {
-          this.$refs.slot_machine && this.$refs.slot_machine.resetRoll()
+          this.$refs.slot_machine && this.$refs.slot_machine.reset()
           this.showWinner = false
         }
       })
@@ -239,15 +239,17 @@ export default {
       }
     },
     async onSpinning() {
-      const telno = this.winner.telno.slice(0, -3) + 'xxx'
-      this.$refs.slot_machine && this.$refs.slot_machine.resetRoll()
-      await this.$refs.slot_machine.spin(telno)
+      // const telno = this.winner.telno.slice(0, -3) + 'xxx'
+      const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
+      this.$refs.slot_machine && this.$refs.slot_machine.reset()
+      await this.$refs.slot_machine.start(codes)
     },
     async onSpined() {
-      const telno = this.winner.telno.slice(0, -3) + 'xxx'
+      // const telno = this.winner.telno.slice(0, -3) + 'xxx'
+      const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
       console.log(this.$refs.slot_machine)
-      this.$refs.slot_machine && this.$refs.slot_machine.resetRoll()
-      await this.$refs.slot_machine.show(telno)
+      this.$refs.slot_machine && this.$refs.slot_machine.reset()
+      await this.$refs.slot_machine.show(codes)
     },
     getWinner() {
       try {
@@ -267,16 +269,19 @@ export default {
     async onOffloadRegistrants(version) {
       try {
         const localVersion = localStorage.getItem('offline_version')
+        const localData = localStorage.getItem('offline_registrants')
         console.log('load registrants', version, localVersion)
-        if (localVersion !== version + '') {
+        if (localVersion !== version + '' || !localData) {
           const snapshot = await this.$fire.database.ref('candidates').once('value')
-          const registrants = snapshot.val()
+          const registrants = snapshot.val() || '[]'
           localStorage.setItem('offline_registrants', JSON.stringify(registrants))
           localStorage.setItem('offline_version', version)
           this.hasRegistrants = (registrants && registrants.length > 0)
         }
       } catch (error) {
         console.error(error)
+        localStorage.removeItem('offline_registrants')
+        this.hasRegistrants = false
       }
     },
     loadRegistrants() {

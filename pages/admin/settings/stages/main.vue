@@ -218,7 +218,7 @@
           ref="slot_machine"
           :items="slotLen"
           :message="'คุณ xxx xxxx'"
-          :visible="true"
+          :fixed="true"
           :message-color="settings.slot.name_color"
           :color="settings.slot.number_color"
           :slot-background="settings.slot.number_background"

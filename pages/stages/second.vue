@@ -25,7 +25,7 @@
       <v-spacer />
       <div class="screen-history">
         <div class="screen-history-list elevation-1">
-          <template v-for="item in winners.slice(0, 3)">
+          <template v-for="item in winners.slice(0, 10)">
             <div :key="item.id" class="screen-history-item">
               <div>
                 <div>{{ item.name }}</div>
