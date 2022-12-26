@@ -60,7 +60,7 @@ export default {
       id: null,
       spinning: false,
       boxSize: 10,
-      boxItems: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'X'],
+      boxItems: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
       ro: null,
       audio: null,
     }
@@ -97,7 +97,7 @@ export default {
     resetRoll() {
       this.roll()
     },
-    roll(selected, first = true, groups = 1, duration = 1) {
+    roll(selected, first = true, groups = 100, duration = 1) {
       const items = document.querySelectorAll('.slot-machine-item')
       duration = Math.max(1, duration)
       let row = 0
@@ -109,7 +109,7 @@ export default {
         const boxesClone = boxes.cloneNode(false)
         const pool = ['0']
         if (!first) {
-          groups = Math.min(1, groups)
+          groups = Math.max(1, groups)
           const arr = []
           for (let i = 0; i < groups; i++) {
             arr.push(...this.boxItems)

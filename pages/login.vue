@@ -63,10 +63,12 @@ export default {
     }
   },
   mounted() {
-    if (this.$store.state.authUser)
-      this.$router.replace('/admin/control')
-    else
+    if (this.$store.state.authUser) {
       this.loading = false
+      this.$router.replace('/admin/control')
+    } else {
+      this.loading = false
+    }
   },
   methods: {
     async handleOnSigIn() {

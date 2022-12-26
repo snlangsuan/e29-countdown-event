@@ -13,7 +13,7 @@ export default {
   },
 
   ON_AUTH_STATE_CHANGED_MUTATION: (state, { authUser, claims }) => {
-    const { uid, email } = authUser
+    const { uid, email } = authUser || {}
     state.authUser = { uid, email }
   }
 }
