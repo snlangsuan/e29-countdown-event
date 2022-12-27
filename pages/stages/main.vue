@@ -23,23 +23,6 @@
       </div>
     </div>
   </div>
-  <!-- <div
-    v-resize="onResize"
-    class="screen__container"
-    :style="{ backgroundImage: 'url(' + backgroundImage + ')' }"
-  >
-    <div class="screen-item" style="width: 95%">
-      <slot-machine ref="slot_machine" :items="slotLen" :message="'คุณ' + winner.name" :visible="showWinner" />
-    </div>
-    <div class="screen-item" style="flex: 0">
-      <button
-        class="screen-btn"
-        :style="{ width: buttonSize + 'px', height: buttonSize + 'px' }"
-        :disabled="!hasRegistrants || ['wait', 'spined', 'spinning'].includes(state)"
-        @click="handleOnSpin"
-      ></button>
-    </div>
-  </div> -->
 </template>
 
 <script>
@@ -154,7 +137,6 @@ export default {
       this.$fire.database.ref('stage').on('value', (snapshot) => {
         const val = snapshot.val()
         this.onOffloadRegistrants(val.offline_version)
-        this.backgroundImage = ((val.settings || {}).main || {}).bg_url
         if (!this.isSpinDevice) {
           this.state = val.state
           const winner = val.winner

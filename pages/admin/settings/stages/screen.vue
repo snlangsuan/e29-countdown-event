@@ -66,54 +66,6 @@
             />
           </div>
         </div>
-        <div v-else-if="selected === 'button'">
-          <v-subheader>Button</v-subheader>
-          <div class="px-4">
-            <upload-image-field
-              ref="setting_button_upload"
-              v-model="settings.button.background.image"
-              :src="settings.button.background.url"
-              accept="image/jpeg,image/png"
-              style="height: 260px"
-              @remove="handleOnRemoveButton"
-            />
-          </div>
-          <v-subheader>Size and Padding</v-subheader>
-          <div class="px-4">
-            <v-text-field
-              v-model="settings.button.size"
-              label="Size"
-              type="number"
-              :min="100"
-              :rules="[
-                (v) => (!!v && Number(v) > 0) || 'Invalid button size',
-                (v) =>
-                  (!!v && Number(v) >= 100) ||
-                  'button size should be above 100',
-              ]"
-              dense
-              outlined
-            ></v-text-field>
-            <v-text-field
-              v-model="settings.button.padding_top"
-              label="Padding Top"
-              type="number"
-              :rules="[(v) => (!!v && Number(v) > 0) || 'Invalid padding top']"
-              dense
-              outlined
-            ></v-text-field>
-            <v-text-field
-              v-model="settings.button.padding_bottom"
-              label="Padding Bottom"
-              type="number"
-              :rules="[
-                (v) => (!!v && Number(v) > 0) || 'Invalid padding bottom',
-              ]"
-              dense
-              outlined
-            ></v-text-field>
-          </div>
-        </div>
         <div v-else-if="selected === 'slot'">
           <v-subheader>Size and Padding</v-subheader>
           <div class="px-4">
@@ -127,6 +79,14 @@
                 (v) =>
                   (!!v && Number(v) >= 500) || 'slot width should be above 500',
               ]"
+              dense
+              outlined
+            ></v-text-field>
+            <v-text-field
+              v-model="settings.slot.padding_top"
+              label="Padding Top"
+              type="number"
+              :rules="[(v) => (!!v && Number(v) > 0) || 'Invalid padding top']"
               dense
               outlined
             ></v-text-field>
@@ -224,16 +184,6 @@
           :background-color="settings.slot.background_color"
         />
       </div>
-      <div
-        ref="button"
-        :class="[
-          'setting-button',
-          { 'setting-item--selected': selected === 'button' },
-        ]"
-        :style="buttonOuterStyle"
-      >
-        <div class="setting-button__image" :style="buttonInnerStyle"></div>
-      </div>
     </div>
     <v-overlay v-model="loading">
       <div class="text-center">
@@ -264,7 +214,7 @@
 <script>
 import { v4 as uuidv4 } from 'uuid'
 export default {
-  name: 'SettingStageMainPage',
+  name: 'SettingsStagesScreenPage',
   layout: 'admin',
   middleware: 'auth',
   data() {
@@ -272,19 +222,15 @@ export default {
       loading: false,
       saving: false,
       selected: null,
-      slotLen: 10,
       maxWidth: 0,
       maxHeight: 0,
+      valid: true,
       preview: {
         width: 0,
         height: 0,
-        button: {
-          size: 0,
-          padding_top: 0,
-          padding_bottom: 0,
-        },
         slot: {
           width: 0,
+          padding_top: 0,
         },
       },
       settings: {
@@ -297,25 +243,15 @@ export default {
           mode: 'color',
           color: '#DDDDDD',
         },
-        button: {
-          size: 180,
-          padding_top: 32,
-          padding_bottom: 32,
-          background: {
-            url: null,
-            image: null,
-            path: null,
-          },
-        },
         slot: {
           width: 1240,
+          padding_top: 24,
           name_color: '#000000',
           number_color: '#000000',
           number_background: '#ffffff',
           background_color: '#ffffff00'
         },
       },
-      valid: true,
       snack: {
         show: false,
         color: 'success',
@@ -341,26 +277,10 @@ export default {
         ...background,
       }
     },
-    buttonInnerStyle() {
-      const backgroundImage = this.settings.button.background.url
-        ? this.settings.button.background.url
-        : this.settings.button.background.image
-      return {
-        width: this.preview.button.size + 'px',
-        height: this.preview.button.size + 'px',
-        backgroundImage: 'url(' + backgroundImage + ')',
-        backgroundColor: backgroundImage ? 'transparent' : '#ffffff',
-      }
-    },
-    buttonOuterStyle() {
-      return {
-        paddingTop: this.preview.button.padding_top + 'px',
-        paddingBottom: this.preview.button.padding_bottom + 'px',
-      }
-    },
     slotStyle() {
       return {
         width: this.preview.slot.width + 'px',
+        paddingTop: this.preview.slot.padding_top + 'px'
       }
     },
   },
@@ -382,13 +302,9 @@ export default {
       this.settings.slot.width = Math.max(Number(val), 500)
       this.determineSlotSize()
     },
-    'settings.button': {
-      deep: true,
-      handler(val) {
-        this.settings.button.size = Math.max(Number(val.size), 100)
-        this.determineButtonSize()
-      },
-    },
+    'settings.slot.padding_top'(val) {
+      this.determineSlotSize()
+    }
   },
   mounted() {
     this.loadSettings()
@@ -404,14 +320,13 @@ export default {
         height - (this.$vuetify.application.top + this.$vuetify.application.bar)
       this.maxWidth = window.innerWidth - 280
       this.determineCanvasSize()
-      this.determineButtonSize()
       this.determineSlotSize()
     },
     async loadSettings() {
       try {
         this.loading = true
         const snapshot = await this.$fire.database
-          .ref('settings/stages/main')
+          .ref('settings/stages/screen')
           .once('value')
 
         const settings = snapshot.val() || {}
@@ -423,22 +338,15 @@ export default {
         this.settings.background.url = background.url || null
         this.settings.background.path = background.path || null
         this.settings.background.image = null
-        const button = settings.button || {}
-        this.settings.button.size = button.size || 180
-        this.settings.button.padding_top = button.padding_top || 32
-        this.settings.button.padding_bottom = button.padding_bottom || 32
-        const btnImage = button.background || {}
-        this.settings.button.background.url = btnImage.url || null
-        this.settings.button.background.path = btnImage.path || null
-        this.settings.button.background.image = null
+
         const slot = settings.slot || {}
         this.settings.slot.width = slot.width || 1240
+        this.settings.slot.padding_top = slot.padding_top || 24
         this.settings.slot.name_color = slot.name_color || '#000000'
         this.settings.slot.number_color = slot.number_color || '#000000'
         this.settings.slot.number_background = slot.number_background || '#ffffff'
         this.settings.slot.background_color = slot.background_color || '#ffffff00'
         this.determineCanvasSize()
-        this.determineButtonSize()
         this.determineSlotSize()
         this.selected = 'canvas'
       } catch (error) {
@@ -447,52 +355,12 @@ export default {
         this.loading = false
       }
     },
-    handleOnApplyPreview() {
-      if (this.selected === 'canvas') {
-        this.settings.width = Number(this.tempSettings.width)
-        this.settings.height = Number(this.tempSettings.height)
-        this.settings.background = JSON.parse(
-          JSON.stringify(this.tempSettings.background)
-        )
-      } else if (this.selected === 'button') {
-        this.settings.button.size = Number(this.tempSettings.button.size)
-        this.settings.button.padding_top = Number(
-          this.tempSettings.button.padding_top
-        )
-        this.settings.button.padding_bottom = Number(
-          this.tempSettings.button.padding_bottom
-        )
-        this.settings.button.background = JSON.parse(
-          JSON.stringify(this.tempSettings.button.background)
-        )
-      } else if (this.selected === 'slot') {
-        this.settings.slot.width = Number(this.tempSettings.slot.width)
-        this.settings.slot.name_color = this.tempSettings.slot.name_color
-      }
-      console.log(this.settings, this.tempSettings)
-      this.determineCanvasSize()
-      this.determineButtonSize()
-      this.determineSlotSize()
-    },
-    handleOnRemoveBackground() {
-      this.settings.background.delete = this.settings.background.path
-      this.settings.background.url = null
-      this.settings.background.image = null
-    },
     handleOnSelect(e) {
       if (e.target.closest('.setting-slot')) {
         this.selected = 'slot'
-      } else if (e.target.closest('.setting-button')) {
-        this.selected = 'button'
       } else {
         this.selected = 'canvas'
       }
-    },
-    handleOnRemoveButton() {
-      this.settings.button.background.delete =
-        this.settings.button.background.path
-      this.settings.button.background.url = null
-      this.settings.button.background.path = null
     },
     async handleOnSaveAll() {
       try {
@@ -513,21 +381,7 @@ export default {
           this.settings.background.path = imgSnapshot.metadata.fullPath
         }
 
-        if (this.settings.button.background.delete) {
-          await this.$fire.storage.ref('/' + this.settings.button.background.delete).delete()
-          delete this.settings.button.background.delete
-          delete this.settings.button.background.path
-        }
-
-        if (this.settings.button.background.image) {
-          const ext = String(this.settings.button.background.image).includes('png') ? '.png' : '.jpg'
-          const refName = uuidv4() + ext
-          const imgSnapshot = await this.$fire.storage.ref('/settings/' + refName).putString(this.settings.button.background.image, 'data_url')
-          delete this.settings.button.background.image
-          this.settings.button.background.url = await imgSnapshot.ref.getDownloadURL()
-          this.settings.button.background.path = imgSnapshot.metadata.fullPath
-        }
-        await this.$fire.database.ref('settings/stages/main').update(this.settings)
+        await this.$fire.database.ref('settings/stages/screen').update(this.settings)
         this.snack.message = 'Saved'
         this.snack.color = 'success'
         this.snack.show = true
@@ -536,7 +390,11 @@ export default {
       } finally {
         this.saving = false
       }
-      // console.log(this.settings)
+    },
+    handleOnRemoveBackground() {
+      this.settings.background.delete = this.settings.background.path
+      this.settings.background.url = null
+      this.settings.background.image = null
     },
     determineCanvasSize() {
       if (this.settings.height > this.settings.width) {
@@ -561,28 +419,20 @@ export default {
         this.preview.height = newHeight
       }
     },
-
     determineCanvasWidth(originalWidth, originalHeight, newHeight) {
       return (originalWidth / originalHeight) * newHeight
     },
     determineCanvasHeight(originalWidth, originalHeight, newWidth) {
       return (originalHeight / originalWidth) * newWidth
     },
-    determineButtonSize() {
-      const scale = this.preview.height / this.settings.height
-      const size = scale * this.settings.button.size
-      const paddingTop = scale * this.settings.button.padding_top
-      const paddingBottom = scale * this.settings.button.padding_bottom
-      this.preview.button.size = size
-      this.preview.button.padding_top = paddingTop
-      this.preview.button.padding_bottom = paddingBottom
-    },
     determineSlotSize() {
       const scale = this.preview.height / this.settings.height
       const width = scale * this.settings.slot.width
+      const paddingTop = scale * this.settings.slot.padding_top
       this.preview.slot.width = width
+      this.preview.slot.padding_top = paddingTop
     },
-  },
+  }
 }
 </script>
 
@@ -604,7 +454,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     border: thin solid #fafafa;
     cursor: pointer;
     overflow: hidden;
@@ -665,17 +515,6 @@ export default {
     width: 90%;
     border: thin solid transparent;
     cursor: pointer;
-  }
-
-  &-button {
-    border: thin solid transparent;
-    cursor: pointer;
-    &__image {
-      background-color: #fff;
-      background-repeat: no-repeat;
-      background-size: contain;
-      background-position: center;
-    }
   }
 
   &-item {

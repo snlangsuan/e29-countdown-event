@@ -215,6 +215,17 @@
         <div>Saving...</div>
       </div>
     </v-overlay>
+    <v-snackbar
+      :timeout="snack.timeout"
+      :value="snack.show"
+      fixed
+      bottom
+      :color="snack.color"
+      left
+      text
+    >
+      {{ snack.message }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -264,6 +275,12 @@ export default {
         }
       },
       valid: true,
+      snack: {
+        show: false,
+        color: 'success',
+        message: '',
+        timeout: 1000,
+      }
     }
   },
   computed: {
@@ -376,6 +393,9 @@ export default {
         }
 
         await this.$fire.database.ref('settings/stages/second').update(this.settings)
+        this.snack.message = 'Saved'
+        this.snack.color = 'success'
+        this.snack.show = true
       } catch (error) {
         console.error(error)
       } finally {

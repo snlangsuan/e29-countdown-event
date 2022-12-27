@@ -131,6 +131,9 @@ export default {
     },
     reset() {
       this.visible = false
+      this.opts = null
+      this.startedAt = null
+      this.audio && (this.audio.currentTime = 0)
       for (const i in this.slots) {
         const slot = this.$refs.slots[i]
         const el = slot.querySelector('.slot-machine-box')

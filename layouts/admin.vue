@@ -76,14 +76,20 @@ export default {
         },
         {
           key: 'menu-settings-stages-main',
-          text: 'Settings Main',
+          text: 'Settings Random Screen',
           link: '/admin/settings/stages/main',
           icon: 'mdi-numeric-1-box-outline',
         },
         {
           key: 'menu-settings-stages-second',
-          text: 'Settings Second',
+          text: 'Settings MC Screen',
           link: '/admin/settings/stages/second',
+          icon: 'mdi-numeric-2-box-outline',
+        },
+        {
+          key: 'menu-settings-stages-screen',
+          text: 'Settings Main Screen',
+          link: '/admin/settings/stages/screen',
           icon: 'mdi-numeric-2-box-outline',
         },
         {
@@ -96,15 +102,21 @@ export default {
         },
         {
           key: 'menu-state-main',
-          text: 'Main Screen',
+          text: 'Random Screen',
           link: '/stages/main',
           icon: 'mdi-home-floor-1',
         },
         {
           key: 'menu-state-second',
-          text: 'Second Screen',
+          text: 'MC Screen',
           link: '/stages/second',
           icon: 'mdi-home-floor-2'
+        },
+        {
+          key: 'menu-state-screen',
+          text: 'Main Screen',
+          link: '/stages/screen',
+          icon: 'mdi-home-floor-3'
         }
       ]
     }
