@@ -240,8 +240,10 @@ export default {
     onSpinning() {
       // const telno = this.winner.telno.slice(0, -3) + 'xxx'
       const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
-      this.$refs.slot_machine && this.$refs.slot_machine.reset()
-      this.$refs.slot_machine.start(codes)
+      setTimeout(() => {
+        this.$refs.slot_machine && this.$refs.slot_machine.reset()
+        this.$refs.slot_machine.start(codes)
+      }, 100)
     },
     onSpined() {
       // const telno = this.winner.telno.slice(0, -3) + 'xxx'
@@ -278,6 +280,7 @@ export default {
           localStorage.setItem('offline_registrants', JSON.stringify(registrants))
           localStorage.setItem('offline_version', version)
           this.hasRegistrants = (registrants && registrants.length > 0)
+          console.log('load random data completed')
         }
       } catch (error) {
         console.error(error)

@@ -157,6 +157,7 @@ export default {
       }
     },
     animate(timestamp) {
+      if (!this.opts) return
       if (this.startedAt === null) this.startedAt = timestamp
       const timeDiff = timestamp - this.startedAt
       this.opts.forEach((opt) => {
