@@ -3,14 +3,14 @@
     <div class="slot-machine-list">
       <template v-for="slot, i in slots">
         <div ref="slots" :key="'slot-' + i" class="slot-machine-item" :style="{ backgroundColor: slotBackground }">
-          <div class="slot-machine-boxes" :style="{ width: (boxSize + boxPadding * 2) + 'px', height: (boxSize + boxPadding * 2) + 'px' }">
-            <div class="slot-machine-box" :style="{ paddingTop: boxPadding + 'px', paddingBottom: boxPadding + 'px' }">
+          <div class="slot-machine-boxes" :style="{ width: boxWidth + 'px', height: boxHeight + 'px' }">
+            <div class="slot-machine-box">
               <template v-for="item, j in slot">
-                <div :key="'item-' + i + j" class="slot-machine-box__item" :style="{ width: boxSize + 'px', height: boxSize + 'px', fontSize: boxSize + 'px' }">
+                <div :key="'item-' + i + j" class="slot-machine-box__item" :style="{ width: boxWidth + 'px', height: boxHeight + 'px', fontSize: boxWidth + 'px' }">
                   {{ item }}
                 </div>
               </template>
-              <div class="slot-machine-box__item slot-machine-box__item--copy" :style="{ width: boxSize + 'px', height: boxSize + 'px', fontSize: boxSize + 'px' }">
+              <div class="slot-machine-box__item slot-machine-box__item--copy" :style="{ width: boxWidth + 'px', height: boxHeight + 'px', fontSize: boxWidth + 'px' }">
                 {{ slot[0] }}
               </div>
             </div>
@@ -18,7 +18,7 @@
         </div>
       </template>
     </div>
-    <div  v-if="!hideDetails" class="slot-machine-details"  :style="{ minHeight: (boxSize * 0.7) + 'px', fontSize: (boxSize * 0.7) + 'px', color: messageColor }">
+    <div  v-if="!hideDetails" class="slot-machine-details"  :style="{ minHeight: (boxWidth * 0.7) + 'px', fontSize: (boxWidth * 0.7) + 'px', color: messageColor }">
       {{ visible || fixed ? message : '&nbsp;' }}
     </div>
   </div>
@@ -61,8 +61,8 @@ export default {
     return {
       id: null,
       ro: null,
-      boxSize: 200,
-      boxPadding: 12,
+      boxWidth: 200,
+      boxHeight: 200,
       slots: [],
       opts: null,
       startedAt: null,
@@ -88,9 +88,10 @@ export default {
       console.log(width)
       const padding = 9 * 8
       const size = (width - padding) / 10
-      this.boxSize = size
-      this.boxPadding = size * 0.1
-      console.log(this.boxSize)
+      this.boxWidth = size
+      const boxPadding = size * 0.1
+      this.boxHeight = size + (boxPadding * 2)
+      console.log('update box size', this.boxWidth, this.boxHeight)
     },
     initSlots() {
       this.slots = [...Array(10)].map((x) => [...Array(11)].map((y, i) => i > 9 ? 'X' : i))
@@ -118,9 +119,9 @@ export default {
 
         const opts = {
           el: slot.querySelector('.slot-machine-box'),
-          finalPos: choice * this.boxSize,
+          finalPos: choice * this.boxHeight,
           startOffset: 2000 + Math.random() * 500 + i * 500,
-          height: data.length * this.boxSize,
+          height: data.length * this.boxHeight,
           duration: 9000 + i * 700, // milliseconds
           isFinished: false,
         }
@@ -146,10 +147,12 @@ export default {
         const choice = codes[i]
         const data = this.slots[i]
         const slot = this.$refs.slots[i]
-        const finalPos = choice * this.boxSize
-        const height = data.length * this.boxSize
+        const finalPos = choice * this.boxHeight
+        console.log('all items', data.length, this.boxHeight, data.length * this.boxHeight)
+        const height = data.length * this.boxHeight
         const pos = -1 * Math.floor(finalPos % height)
         const el = slot.querySelector('.slot-machine-box')
+        console.log(el.style.transform, height, finalPos, typeof(choice))
         el.style.transform = 'translateY(' + pos + 'px)'
       }
     },
@@ -176,6 +179,7 @@ export default {
         this.audio && (this.audio.currentTime = 0)
         this.visible = true
         console.log('finished')
+        this.$emit('end')
       } else {
         this.next()(this.animate)
       }
@@ -223,7 +227,6 @@ export default {
   &-box {
     display: block;
     margin: 0;
-    padding: 12px 0;
 
     &__item {
       display: flex;

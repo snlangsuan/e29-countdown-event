@@ -118,16 +118,18 @@ export default {
         console.error(error)
       }
     },
-    async onSpinning() {
+    onSpinning() {
       const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
       this.$refs.slot_machine && this.$refs.slot_machine.reset()
-      await this.$refs.slot_machine.start(codes)
+      this.$refs.slot_machine.start(codes)
     },
-    async onSpined() {
+    onSpined() {
       const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
       console.log(this.$refs.slot_machine)
-      this.$refs.slot_machine && this.$refs.slot_machine.reset()
-      await this.$refs.slot_machine.show(codes)
+      setTimeout(() => {
+        this.$refs.slot_machine && this.$refs.slot_machine.reset()
+        this.$refs.slot_machine.show(codes)
+      }, 100)
     },
   }
 }

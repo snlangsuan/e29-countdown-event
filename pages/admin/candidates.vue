@@ -63,7 +63,7 @@ export default {
     async loadData() {
       try {
         this.loading = true
-        const snapshot = await this.$fire.database.ref('candidates1').once('value')
+        const snapshot = await this.$fire.database.ref('candidates').once('value')
         const items = snapshot.val() || []
         console.log(items)
         this.items = items

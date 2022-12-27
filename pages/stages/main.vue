@@ -11,6 +11,7 @@
           :color="settings.slot.number_color"
           :slot-background="settings.slot.number_background"
           :background-color="settings.slot.background_color"
+          @end="handleOnEndSpin"
         />
       </div>
       <div class="screen__button" :style="screenButtonStyle">
@@ -22,6 +23,12 @@
         ></button>
       </div>
     </div>
+    <v-overlay v-model="loading">
+      <div class="text-center">
+        <v-progress-circular width="3" />
+        <div>Loading...</div>
+      </div>
+    </v-overlay>
   </div>
 </template>
 
@@ -34,6 +41,7 @@ export default {
   data() {
     return {
       state: 'wait',
+      loading: false,
       spinning: true,
       showWinner: false,
       isSpinDevice: false,
@@ -123,14 +131,21 @@ export default {
       const height = window.innerHeight
       this.buttonSize = height * 0.25
     },
-    init() {
+    async init() {
       try {
-        const registrants = this.loadRegistrants()
+        this.loading = true
+        const snapshot = await this.$fire.database.ref('winner_logs').once('value')
+        const val = snapshot.val() || {}
+        const logs = Object.keys(val).map((x) => val[x].telno)
+        let registrants = this.loadRegistrants()
+        registrants = registrants.filter((x) => !logs.includes(x.telno))
         console.log(registrants)
         this.hasRegistrants = (registrants && registrants.length > 0)
       } catch (error) {
         this.error.messages = [error.message]
         this.error.show = false
+      } finally {
+        this.loading = false
       }
     },
     initEvent() {
@@ -207,11 +222,6 @@ export default {
         })
         this.state = 'spinning'
         await this.onSpinning()
-        await this.$fire.database.ref('stage').update({
-          state: 'spined'
-        })
-        await this.$fire.database.ref('winner_logs').push({ ...winner, created_at: dayjs().format('YYYY-MM-DD HH:mm:ss') })
-        this.state = 'spined'
       } catch (error) {
         console.error(error)
       } finally {
@@ -220,18 +230,27 @@ export default {
         this.isSpinDevice = false
       }
     },
-    async onSpinning() {
-      // const telno = this.winner.telno.slice(0, -3) + 'xxx'
-      const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
-      this.$refs.slot_machine && this.$refs.slot_machine.reset()
-      await this.$refs.slot_machine.start(codes)
+    async handleOnEndSpin() {
+      await this.$fire.database.ref('stage').update({
+        state: 'spined'
+      })
+      await this.$fire.database.ref('winner_logs').push({ ...this.winner, created_at: dayjs().format('YYYY-MM-DD HH:mm:ss') })
+      this.state = 'spined'
     },
-    async onSpined() {
+    onSpinning() {
       // const telno = this.winner.telno.slice(0, -3) + 'xxx'
       const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
-      console.log(this.$refs.slot_machine)
       this.$refs.slot_machine && this.$refs.slot_machine.reset()
-      await this.$refs.slot_machine.show(codes)
+      this.$refs.slot_machine.start(codes)
+    },
+    onSpined() {
+      // const telno = this.winner.telno.slice(0, -3) + 'xxx'
+      const codes = [...this.winner.telno.slice(0, -3).split('').map((x) => Number(x)), 10, 10, 10]
+      console.log(codes, this.$refs.slot_machine)
+      setTimeout(() => {
+        this.$refs.slot_machine && this.$refs.slot_machine.reset()
+        this.$refs.slot_machine.show(codes)
+      }, 100)
     },
     getWinner() {
       try {
