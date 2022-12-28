@@ -146,6 +146,20 @@
               </v-list-item-action>
             </v-list-item>
           </v-list>
+          <v-subheader>Visibility</v-subheader>
+          <div class="px-4">
+            <div class="d-flex align-center justify-start">
+              <v-checkbox v-model="settings.slot.show_name" class="font-weight-regular pa-0 ma-0" hide-details />
+              <span class="font-weight-regular" style="font-size: 0.8125rem;line-height: 1rem">Show name</span>
+            </div>
+          </div>
+          <!-- <v-list dense class="py-0">
+            <v-list-item>
+                <v-list-item-content>
+                  <v-checkbox v-model="settings.slot.show_name" label="Show name" class="pa-0 ma-0" />
+                </v-list-item-content>
+            </v-list-item>
+          </v-list> -->
         </div>
       </v-form>
       <template #append>
@@ -178,6 +192,7 @@
           ref="slot_machine"
           :message="'คุณ xxx xxxx'"
           :fixed="true"
+          :hide-details="!settings.slot.show_name"
           :message-color="settings.slot.name_color"
           :color="settings.slot.number_color"
           :slot-background="settings.slot.number_background"
@@ -246,6 +261,7 @@ export default {
         slot: {
           width: 1240,
           padding_top: 24,
+          show_name: true,
           name_color: '#000000',
           number_color: '#000000',
           number_background: '#ffffff',
@@ -289,13 +305,11 @@ export default {
       this.settings.width = Math.max(Number(val), 600)
       this.determineCanvasSize()
       this.determineSlotSize()
-      this.determineButtonSize()
     },
     'settings.height'(val) {
       this.settings.height = Math.max(Number(val), 600)
       this.determineCanvasSize()
       this.determineSlotSize()
-      this.determineButtonSize()
     },
     'settings.slot.width'(val) {
       console.log(val)
@@ -330,8 +344,8 @@ export default {
           .once('value')
 
         const settings = snapshot.val() || {}
-        this.settings.width = settings.width || 1280
-        this.settings.height = settings.height || 720
+        this.settings.width = settings.width ? Number(settings.width) : 1280
+        this.settings.height = settings.height ? Number(settings.height) : 720
         const background = settings.background || {}
         this.settings.background.mode = background.mode || 'color'
         this.settings.background.color = background.color || '#DDDDDD'
@@ -340,8 +354,9 @@ export default {
         this.settings.background.image = null
 
         const slot = settings.slot || {}
-        this.settings.slot.width = slot.width || 1240
-        this.settings.slot.padding_top = slot.padding_top || 24
+        this.settings.slot.width = slot.width ? Number(slot.width) : 1240
+        this.settings.slot.padding_top = slot.padding_top ? Number(slot.padding_top) : 24
+        this.settings.slot.show_name = slot.show_name !== false
         this.settings.slot.name_color = slot.name_color || '#000000'
         this.settings.slot.number_color = slot.number_color || '#000000'
         this.settings.slot.number_background = slot.number_background || '#ffffff'

@@ -203,6 +203,7 @@ export default {
     width: 100%;
     display: flex;
     user-select: none;
+    margin-bottom: 8px;
 
     & * {
       user-select: none;
@@ -240,7 +241,7 @@ export default {
   }
 
   &-details {
-    margin-top: 16px;
+    margin-top: 8px;
     font-size: 5rem;
     text-align: center;
   }

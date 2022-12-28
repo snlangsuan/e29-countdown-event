@@ -340,8 +340,8 @@ export default {
           .once('value')
 
         const settings = snapshot.val() || {}
-        this.settings.width = settings.width || 820
-        this.settings.height = settings.height || 1180
+        this.settings.width = settings.width ? Number(settings.width) : 820
+        this.settings.height = settings.height ? Number(settings.height) : 1180
         const background = settings.background || {}
         this.settings.background.mode = background.mode || 'color'
         this.settings.background.color = background.color || '#DDDDDD'
@@ -349,10 +349,10 @@ export default {
         this.settings.background.path = background.path || null
         this.settings.background.image = null
         const content = settings.content || {}
-        this.settings.content.name_size = content.name_size || 18
-        this.settings.content.phone_size = content.phone_size || 24
-        this.settings.content.margin_top = content.margin_top || 24
-        this.settings.content.padding = content.padding || 24
+        this.settings.content.name_size = content.name_size ? Number(content.name_size) : 18
+        this.settings.content.phone_size = content.phone_size ? Number(content.phone_size) : 24
+        this.settings.content.margin_top = content.margin_top ? Number(content.margin_top) : 24
+        this.settings.content.padding = content.padding ? Number(content.padding) : 24
         this.settings.content.phone_color = content.phone_color || '#000000'
         this.settings.content.name_color = content.name_color || '#000000'
         this.settings.content.background.color = (content.background || {}).color || '#ffffffaa'
@@ -408,6 +408,7 @@ export default {
       this.settings.background.image = null
     },
     determineCanvasSize() {
+      console.log(this.settings.height, this.settings.width)
       if (this.settings.height > this.settings.width) {
         console.log('h > w')
         const newHeight = Math.min(parseInt(this.maxHeight * 0.8), 640)

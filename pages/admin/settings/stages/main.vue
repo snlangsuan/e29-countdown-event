@@ -186,6 +186,13 @@
               </v-list-item-action>
             </v-list-item>
           </v-list>
+          <v-subheader>Visibility</v-subheader>
+          <div class="px-4">
+            <div class="d-flex align-center justify-start">
+              <v-checkbox v-model="settings.slot.show_name" class="font-weight-regular pa-0 ma-0" hide-details />
+              <span class="font-weight-regular" style="font-size: 0.8125rem;line-height: 1rem">Show name</span>
+            </div>
+          </div>
         </div>
       </v-form>
       <template #append>
@@ -218,6 +225,7 @@
           ref="slot_machine"
           :message="'คุณ xxx xxxx'"
           :fixed="true"
+          :hide-details="!settings.slot.show_name"
           :message-color="settings.slot.name_color"
           :color="settings.slot.number_color"
           :slot-background="settings.slot.number_background"
@@ -309,6 +317,7 @@ export default {
         },
         slot: {
           width: 1240,
+          show_name: true,
           name_color: '#000000',
           number_color: '#000000',
           number_background: '#ffffff',
@@ -415,8 +424,8 @@ export default {
           .once('value')
 
         const settings = snapshot.val() || {}
-        this.settings.width = settings.width || 1280
-        this.settings.height = settings.height || 720
+        this.settings.width = settings.width ? Number(settings.width) : 1280
+        this.settings.height = settings.height ? Number(settings.height) : 720
         const background = settings.background || {}
         this.settings.background.mode = background.mode || 'color'
         this.settings.background.color = background.color || '#DDDDDD'
@@ -424,15 +433,16 @@ export default {
         this.settings.background.path = background.path || null
         this.settings.background.image = null
         const button = settings.button || {}
-        this.settings.button.size = button.size || 180
-        this.settings.button.padding_top = button.padding_top || 32
-        this.settings.button.padding_bottom = button.padding_bottom || 32
+        this.settings.button.size = button.size ? Number(button.size) : 180
+        this.settings.button.padding_top = button.padding_top ? Number(button.padding_top) : 32
+        this.settings.button.padding_bottom = button.padding_bottom ? Number(button.padding_bottom) : 32
         const btnImage = button.background || {}
         this.settings.button.background.url = btnImage.url || null
         this.settings.button.background.path = btnImage.path || null
         this.settings.button.background.image = null
         const slot = settings.slot || {}
-        this.settings.slot.width = slot.width || 1240
+        this.settings.slot.width = slot.width ? Number(slot.width) : 1240
+        this.settings.slot.show_name = slot.show_name !== false
         this.settings.slot.name_color = slot.name_color || '#000000'
         this.settings.slot.number_color = slot.number_color || '#000000'
         this.settings.slot.number_background = slot.number_background || '#ffffff'

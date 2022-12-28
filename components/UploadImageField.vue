@@ -73,7 +73,6 @@ export default {
   },
   data() {
     return {
-      id: null,
       localVal: '',
       original: null,
       fileCompressor: null,
