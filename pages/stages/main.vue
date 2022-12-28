@@ -134,13 +134,7 @@ export default {
     async init() {
       try {
         this.loading = true
-        const snapshot = await this.$fire.database.ref('winner_logs').once('value')
-        const val = snapshot.val() || {}
-        const logs = Object.keys(val).map((x) => val[x].telno)
-        let registrants = this.loadRegistrants()
-        registrants = registrants.filter((x) => !logs.includes(x.telno))
-        console.log(registrants)
-        this.hasRegistrants = (registrants && registrants.length > 0)
+        await this.validateRandomData()
       } catch (error) {
         this.error.messages = [error.message]
         this.error.show = false
@@ -205,6 +199,19 @@ export default {
         this.settings.slot.number_color = slot.number_color || '#000000'
         this.settings.slot.number_background = slot.number_background || '#ffffff'
         this.settings.slot.background_color = slot.background_color || '#ffffff00'
+      } catch (error) {
+        console.error(error)
+      }
+    },
+    async validateRandomData() {
+      try {
+        const snapshot = await this.$fire.database.ref('winner_logs').once('value')
+        const val = snapshot.val() || {}
+        const logs = Object.keys(val).map((x) => val[x].telno)
+        let registrants = this.loadRegistrants()
+        registrants = registrants.filter((x) => !logs.includes(x.telno))
+        console.log(registrants)
+        this.hasRegistrants = (registrants && registrants.length > 0)
       } catch (error) {
         console.error(error)
       }
@@ -280,7 +287,7 @@ export default {
           const registrants = snapshot.val() || '[]'
           localStorage.setItem('offline_registrants', JSON.stringify(registrants))
           localStorage.setItem('offline_version', version)
-          this.hasRegistrants = (registrants && registrants.length > 0)
+          await this.validateRandomData()
           console.log('load random data completed')
         }
       } catch (error) {

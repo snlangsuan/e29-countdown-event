@@ -110,6 +110,7 @@ export default {
         function (cb) { setTimeout(cb, 1000/60) }
     },
     start(codes = []) {
+      console.log(codes)
       if (this.opts || codes.length !== 10) return
       this.visible = false
       this.opts = this.slots.map((data, i) => {

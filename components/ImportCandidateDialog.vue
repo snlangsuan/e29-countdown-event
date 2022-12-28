@@ -161,7 +161,7 @@ export default {
     async handleOnFinish() {
       try {
         this.uploading = true
-        const items = this.items.map((x) => ({ telno: x[this.mapping[0]], name: x[this.mapping[1]] }))
+        const items = this.items.map((x) => ({ telno: x[this.mapping[0]], name: x[this.mapping[1]] })).filter((x) => String(x.telno).length === 10)
         await this.$fire.database.ref('candidates').set(items)
         await this.$fire.database
           .ref('stage').update({
