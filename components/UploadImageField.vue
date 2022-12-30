@@ -158,6 +158,11 @@ export default {
           this.valid = false
           return
         }
+        if (file.size > 5242880) {
+          this.errorBucket.push('File size must under 5MB')
+          this.valid = false
+          return
+        }
         this.processing = true
         const onSuccess = (result) => {
           const reader = new FileReader()
@@ -166,7 +171,7 @@ export default {
           this.original = result
         }
         this.fileCompressor = new Compressor(file, {
-          convertSize: 5000000,
+          convertSize: 20000000,
           maxWidth: this.imageMaxDimension[0],
           maxHeight: this.imageMaxDimension[1],
           success: onSuccess
