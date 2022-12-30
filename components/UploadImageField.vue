@@ -43,7 +43,6 @@
 </template>
 
 <script>
-import Compressor from 'compressorjs'
 import VInput from 'vuetify/lib/components/VInput/VInput.js'
 export default {
   name: 'UploadImageField',
@@ -164,17 +163,24 @@ export default {
           return
         }
         this.processing = true
-        const onSuccess = (result) => {
-          const reader = new FileReader()
-          reader.onload = this.onRead
-          reader.readAsDataURL(result)
-          this.original = result
-        }
-        this.fileCompressor = new Compressor(file, {
-          maxWidth: this.imageMaxDimension[0],
-          maxHeight: this.imageMaxDimension[1],
-          success: onSuccess
-        })
+        // const onSuccess = (result) => {
+        //   console.log(result)
+        //   const reader = new FileReader()
+        //   reader.onload = this.onRead
+        //   reader.readAsDataURL(result)
+        //   this.original = result
+        // }
+        // this.fileCompressor = new Compressor(file, {
+        //   convertTypes: ['image/png'],
+        //   convertSize: 5000000,
+        //   maxWidth: this.imageMaxDimension[0],
+        //   maxHeight: this.imageMaxDimension[1],
+        //   success: onSuccess
+        // })
+        const reader = new FileReader()
+        reader.onload = this.onRead
+        reader.readAsDataURL(file)
+        this.original = file
       }
     },
     onRead(e) {
