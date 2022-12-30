@@ -171,7 +171,6 @@ export default {
           this.original = result
         }
         this.fileCompressor = new Compressor(file, {
-          convertSize: 20000000,
           maxWidth: this.imageMaxDimension[0],
           maxHeight: this.imageMaxDimension[1],
           success: onSuccess
